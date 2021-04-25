@@ -1,0 +1,6 @@
+name: 'GitHub Contributors Action'
+description: 'Get the contributors information from a GitHub repository'
+author: 'Nidhi/Arun'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
