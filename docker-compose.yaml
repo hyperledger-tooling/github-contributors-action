@@ -1,5 +1,9 @@
 version: "3.6"
 
+networks:
+  test_network:
+    name: test_network
+
 services:
   github-contributors-action:
     build:
@@ -8,5 +12,13 @@ services:
     container_name: github-contributors-action
     environment:
       - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
-      - GITHUB_REPOSITORY_URL=${GITHUB_REPOSITORY_URL}
-      - GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}
+      - GITHUB_REPOSITORY=arsulegai/github-contributors-action
+      - CONTRIBUTORS_SECTION_PATTERN=# Contributors
+      - CONTRIBUTORS_SECTION_END_PATTERN=## Contributions
+      - INPUT_TEMPLATE_FILE=/templates/minimal.md
+      - FILE_WITH_PATTERN=/README.md
+    volumes:
+      - ./templates:/templates
+      - ./README.md:/README.md
+    networks:
+      - test_network
