@@ -35,6 +35,10 @@ func ApplyTemplate(contributors []*github.Contributor, config Config) error {
 	}
 	stringToReplace := string(afterTemplate)
 	log.Printf("After applying template: %v", stringToReplace)
+	err = os.Remove(fileHandler.Name())
+	if err != nil {
+		return err
+	}
 
 	// Find the pattern from the output file
 	// Replace pattern with the generated template
