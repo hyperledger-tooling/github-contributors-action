@@ -56,7 +56,7 @@ func readConfiguration() (Config, error) {
 	// Read inputs from ENV
 	token := getEnvOrDefault("GITHUB_AUTH_TOKEN", "")
 	repo :=
-		getEnvOrDefault("GITHUB_REPOSITORY",
+		getEnvOrDefault("SOURCE_GITHUB_REPOSITORY",
 			"arsulegai/github-contributors-action")
 	pattern :=
 		getEnvOrDefault("CONTRIBUTORS_SECTION_PATTERN", "{{PlaceHolder}}")
