@@ -1,0 +1,12 @@
+version: "3.6"
+
+services:
+  github-contributors-action:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: github-contributors-action
+    environment:
+      - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
+      - GITHUB_REPOSITORY_URL=${GITHUB_REPOSITORY_URL}
+      - GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}
