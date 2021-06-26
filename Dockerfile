@@ -1,8 +1,16 @@
-FROM golang:1.16.3
+FROM golang:1.16.3-alpine
+
+# Add make command
+RUN apk add --no-cache make
+
 WORKDIR /app
 COPY . /app
-RUN go build
-RUN rm *.go go.*
-ENV PATH=${PATH}:/app
+RUN make
+
+WORKDIR /appbin
+RUN cp /app/github-contributors-action /appbin/
+RUN rm -r /app
+
+ENV PATH=${PATH}:/appbin
 
 CMD ["github-contributors-action"]

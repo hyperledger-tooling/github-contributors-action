@@ -1,7 +1,8 @@
-package main
+package templates
 
 import (
 	"fmt"
+	"github-contributors-action/internal/pkg/configs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,20 +13,25 @@ import (
 	"github.com/google/go-github/v33/github"
 )
 
-func ApplyTemplate(contributors []*github.Contributor, config Config) error {
+func ApplyTemplate(contributors []*github.Contributor, config configs.Config) error {
 
-	// First read the template file
-	// Generate output from the template
-	templ, err := template.ParseFiles(config.TemplateFile)
+	/* This logic can be improved. Example: apply the string replace
+	for the first occurrence of pattern instead of blindly replacing
+	first occurrence of start and last occurrence of end.
+	*/
+
+	// First read the templates file
+	// Generate output from the templates
+	templateFile, err := template.ParseFiles(config.TemplateFile)
 	if err != nil {
 		return err
 	}
 	templateFileBytes, err := ioutil.ReadFile(config.TemplateFile)
-	log.Printf("Before applying template: %v", string(templateFileBytes))
+	log.Printf("Before applying templates: %v", string(templateFileBytes))
 	fileHandler, err :=
 		ioutil.TempFile(filepath.Dir(config.FileWithPattern), "generated")
 
-	err = templ.Execute(fileHandler, contributors)
+	err = templateFile.Execute(fileHandler, contributors)
 	if err != nil {
 		return err
 	}
@@ -34,14 +40,14 @@ func ApplyTemplate(contributors []*github.Contributor, config Config) error {
 		return err
 	}
 	stringToReplace := string(afterTemplate)
-	log.Printf("After applying template: %v", stringToReplace)
+	log.Printf("After applying templates: %v", stringToReplace)
 	err = os.Remove(fileHandler.Name())
 	if err != nil {
 		return err
 	}
 
 	// Find the pattern from the output file
-	// Replace pattern with the generated template
+	// Replace pattern with the generated templates
 	fileContents, err := ioutil.ReadFile(config.FileWithPattern)
 	if err != nil {
 		return err
@@ -51,7 +57,12 @@ func ApplyTemplate(contributors []*github.Contributor, config Config) error {
 	leftString := strings.Split(fileString, config.Pattern)[0]
 	rightString := ""
 	if config.EndPattern != "" {
-		rightString = strings.Split(fileString, config.EndPattern)[1]
+		endStrings := strings.Split(fileString, config.EndPattern)
+		if len(endStrings) != 2 {
+			log.Fatalf("Unable to find the end pattern," +
+				"leave it blank if there is none")
+		}
+		rightString = endStrings[1]
 	}
 	finalString :=
 		fmt.Sprintf("%s%s\n%s\n%s%s",
