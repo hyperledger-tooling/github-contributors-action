@@ -15,9 +15,14 @@ import (
 
 func ApplyTemplate(contributors []*github.Contributor, config configs.Config) error {
 
+	/* This logic can be improved. Example: apply the string replace
+	for the first occurrence of pattern instead of blindly replacing
+	first occurrence of start and last occurrence of end.
+	*/
+
 	// First read the templates file
 	// Generate output from the templates
-	templ, err := template.ParseFiles(config.TemplateFile)
+	templateFile, err := template.ParseFiles(config.TemplateFile)
 	if err != nil {
 		return err
 	}
@@ -26,7 +31,7 @@ func ApplyTemplate(contributors []*github.Contributor, config configs.Config) er
 	fileHandler, err :=
 		ioutil.TempFile(filepath.Dir(config.FileWithPattern), "generated")
 
-	err = templ.Execute(fileHandler, contributors)
+	err = templateFile.Execute(fileHandler, contributors)
 	if err != nil {
 		return err
 	}
