@@ -4,12 +4,10 @@ import (
 	ctx "context"
 	"errors"
 	"github-contributors-action/internal/pkg/configs"
-	"log"
-	"net/http"
-	"strings"
-
 	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
+	"log"
+	"net/http"
 )
 
 // GHClient is the custom handler for all requests
@@ -39,38 +37,90 @@ func NewGHClient(config configs.Config) GitRepoInterface {
 	}
 }
 
+// GetContributors returns the list of all contributors.
+// Refer to client configuration for the repositories information.
 func (client GHClient) GetContributors() ([]*github.Contributor, error) {
-	repoParts := strings.Split(client.Config.SourceRepo, "/")
-	// do not check for input, because it is already checked
-	owner := repoParts[0]
-	repository := repoParts[1]
-	listContributorsOptions := &github.ListContributorsOptions{
-		Anon: "1",
+	owner := client.Config.SourceRepos.Owner
+	var listOfContributors []*github.Contributor
+
+	// Get contributors from all of the repositories
+	for _, repository := range client.Config.SourceRepos.Repositories {
+		log.Printf("Requested to get contributors of %s/%s \n",
+			client.Config.SourceRepos.Owner,
+			*repository.Name,
+		)
+		listContributorsOptions := &github.ListContributorsOptions{
+			Anon: "1",
+			ListOptions: github.ListOptions{
+				PerPage: 20,
+			},
+		}
+		// Loop over until all contributors are listed, queries
+		// PerPage number of entries
+		for {
+			contributors, response, err :=
+				client.Client.Repositories.ListContributors(
+					client.Context, owner, *repository.Name, listContributorsOptions)
+			if err != nil {
+				return nil, err
+			}
+			log.Printf("Response: %v", response)
+			if response.StatusCode != http.StatusOK {
+				return nil, errors.New("could not get the response")
+			}
+			listOfContributors = append(listOfContributors, contributors...)
+			if response.NextPage == 0 {
+				log.Println("Breaking from the loop of repositories")
+				break
+			}
+			// assign next page
+			listContributorsOptions.Page = response.NextPage
+		}
+	}
+
+	var finalList []*github.Contributor
+	// Loses association of repository in the Contributor list if any
+	contributorsMap := make(map[int64]bool)
+	for _, contributor := range listOfContributors {
+		if _, present := contributorsMap[contributor.GetID()]; !present {
+			contributorsMap[contributor.GetID()] = true
+			finalList = append(finalList, contributor)
+		}
+	}
+
+	// return final list of unique contributors
+	return finalList, nil
+}
+
+// GetRepos queries and fetches all the repositories that an organization
+// has listed against the GITHUB_TOKEN used.
+func (client GHClient) GetRepos() ([]*github.Repository, error) {
+	var listOfRepositories []*github.Repository
+	listOption := &github.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{
 			PerPage: 20,
 		},
 	}
-	var listOfContributors []*github.Contributor
-	// Loop over until all contributors are listed, queries
-	// PerPage number of entries
 	for {
-		contributors, response, err :=
-			client.Client.Repositories.ListContributors(
-				client.Context, owner, repository, listContributorsOptions)
+		repositories, response, err :=
+			client.Client.Repositories.ListByOrg(client.Context, client.Config.SourceRepos.Owner, listOption)
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("Response: %v", response)
 		if response.StatusCode != http.StatusOK {
 			return nil, errors.New("could not get the response")
 		}
-		listOfContributors = append(listOfContributors, contributors...)
+		for _, repository := range repositories {
+			listOfRepositories = append(listOfRepositories, repository)
+		}
 		if response.NextPage == 0 {
-			log.Println("Breaking from the loop of repositories")
 			break
 		}
 		// assign next page
-		listContributorsOptions.Page = response.NextPage
+		listOption.Page = response.NextPage
 	}
-	return listOfContributors, nil
+	log.Printf("Obtained list of repositories from %s organization\n",
+		client.Config.SourceRepos.Owner,
+	)
+	return listOfRepositories, nil
 }

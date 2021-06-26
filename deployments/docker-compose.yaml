@@ -16,3 +16,20 @@ services:
     volumes:
       - ../assets:/assets
       - ../README.md:/README.md
+
+  github-org-all-contributors:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: github-org-all-contributors
+    environment:
+      - GITHUB_AUTH_TOKEN=${GITHUB_AUTH_TOKEN}
+      - SOURCE_GITHUB_REPOSITORY=hyperledger-tooling
+      - CONTRIBUTORS_SECTION_PATTERN=# Hyperledger Tooling All Contributors
+      ## In case of no end pattern, end of file is considered
+      - CONTRIBUTORS_SECTION_END_PATTERN=
+      - INPUT_TEMPLATE_FILE=/assets/minimal.md
+      - FILE_WITH_PATTERN=/all-contributors.md
+    volumes:
+      - ../assets:/assets
+      - ../all-contributors.md:/all-contributors.md

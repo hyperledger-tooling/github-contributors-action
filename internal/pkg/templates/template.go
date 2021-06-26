@@ -57,7 +57,12 @@ func ApplyTemplate(contributors []*github.Contributor, config configs.Config) er
 	leftString := strings.Split(fileString, config.Pattern)[0]
 	rightString := ""
 	if config.EndPattern != "" {
-		rightString = strings.Split(fileString, config.EndPattern)[1]
+		endStrings := strings.Split(fileString, config.EndPattern)
+		if len(endStrings) != 2 {
+			log.Fatalf("Unable to find the end pattern," +
+				"leave it blank if there is none")
+		}
+		rightString = endStrings[1]
 	}
 	finalString :=
 		fmt.Sprintf("%s%s\n%s\n%s%s",
