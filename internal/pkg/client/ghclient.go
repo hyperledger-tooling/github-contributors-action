@@ -1,8 +1,9 @@
-package main
+package client
 
 import (
 	ctx "context"
 	"errors"
+	"github-contributors-action/internal/pkg/configs"
 	"log"
 	"net/http"
 	"strings"
@@ -11,23 +12,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Client is the custom handler for all requests
-type Client struct {
+// GHClient is the custom handler for all requests
+type GHClient struct {
 	Client  *github.Client
 	Context ctx.Context
-	Config  Config
+	Config  configs.Config
 }
 
-// ClientInterface is for testing
-type ClientInterface interface {
-	GetContributors() ([]*github.Contributor, error)
-}
-
-// NewClient creates a new instance of GitHub client
-func NewClient(config Config) ClientInterface {
+// NewGHClient creates a new instance of GitHub client
+func NewGHClient(config configs.Config) GitRepoInterface {
 	context := ctx.Background()
 	if config.GitHubToken == "" {
-		return Client{
+		return GHClient{
 			Client:  github.NewClient(nil),
 			Context: context,
 			Config:  config,
@@ -36,14 +32,14 @@ func NewClient(config Config) ClientInterface {
 	oauth2Client := oauth2.NewClient(context, oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.GitHubToken},
 	))
-	return Client{
+	return GHClient{
 		Client:  github.NewClient(oauth2Client),
 		Context: context,
 		Config:  config,
 	}
 }
 
-func (client Client) GetContributors() ([]*github.Contributor, error) {
+func (client GHClient) GetContributors() ([]*github.Contributor, error) {
 	repoParts := strings.Split(client.Config.SourceRepo, "/")
 	// do not check for input, because it is already checked
 	owner := repoParts[0]
@@ -66,7 +62,7 @@ func (client Client) GetContributors() ([]*github.Contributor, error) {
 		}
 		log.Printf("Response: %v", response)
 		if response.StatusCode != http.StatusOK {
-			return nil, errors.New("Could not get the response")
+			return nil, errors.New("could not get the response")
 		}
 		listOfContributors = append(listOfContributors, contributors...)
 		if response.NextPage == 0 {
