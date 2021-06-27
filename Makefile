@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 version=$(shell cat VERSION)
 LDFLAGS=-ldflags "-X main.AppVersion=$(version)"
 format_output=$(shell gofmt -l .)

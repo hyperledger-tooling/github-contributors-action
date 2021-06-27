@@ -1,7 +1,7 @@
 FROM golang:1.16.3-alpine
 
 # Add make command
-RUN apk add --no-cache make
+RUN apk add --no-cache make bash
 
 WORKDIR /app
 COPY . /app
