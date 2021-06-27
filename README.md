@@ -30,7 +30,7 @@ This is to avoid the action from corrupt formatting of this file.
 available at [Hyperledger Tooling Contributors](./all-contributors.md) page.
 
 ## Contributors
- <a href="https://github.com/arsulegai"><img src="https://avatars.githubusercontent.com/u/27664223?v=4" width="32" height="32" alt="27664223"></a>  <a href="https://github.com/nidhi-singh02"><img src="https://avatars.githubusercontent.com/u/38173192?v=4" width="32" height="32" alt="38173192"></a> 
+ <a href="https://github.com/arsulegai"><img src="https://avatars.githubusercontent.com/u/27664223?v=4" width="32" height="32" alt="27664223"></a>  <a href="https://github.com/hyperledger-bot"><img src="https://avatars.githubusercontent.com/u/76175814?v=4" width="32" height="32" alt="76175814"></a>  <a href="https://github.com/nidhi-singh02"><img src="https://avatars.githubusercontent.com/u/38173192?v=4" width="32" height="32" alt="38173192"></a> 
 
 ## Contributions
 
