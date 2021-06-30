@@ -1,2 +1,3 @@
-# This file is to automatically add code owners in PR reviews
-* @github-contributors-action-maintainers
+# SPDX-License-Identifier: Apache-2.0
+
+*	@hyperledger-tooling/github-contributors-action-maintainers
