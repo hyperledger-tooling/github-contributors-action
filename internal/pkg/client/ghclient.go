@@ -3,6 +3,7 @@ package client
 import (
 	ctx "context"
 	"errors"
+	"fmt"
 	"github-contributors-action/internal/pkg/configs"
 	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
@@ -65,8 +66,13 @@ func (client GHClient) GetContributors() ([]*github.Contributor, error) {
 				return nil, err
 			}
 			log.Printf("Response: %v", response)
-			if response.StatusCode != http.StatusOK {
-				return nil, errors.New("could not get the response")
+			err, isSkip := filterRepoResponse(response)
+			if isSkip {
+				// continue to next repository, outer loop takes care of it
+				break
+			}
+			if err != nil {
+				return nil, err
 			}
 			listOfContributors = append(listOfContributors, contributors...)
 			if response.NextPage == 0 {
@@ -90,6 +96,21 @@ func (client GHClient) GetContributors() ([]*github.Contributor, error) {
 
 	// return final list of unique contributors
 	return finalList, nil
+}
+
+// filterRepoResponse informs whether to skip the result of this repository.
+// For example, skip the empty repository because there are no contributors.
+func filterRepoResponse(response *github.Response) (error, bool) {
+	// not interested in an empty repository
+	if response.StatusCode == http.StatusNoContent {
+		// nothing to do
+		return nil, true
+	}
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("response code: %d", response.StatusCode), false
+	}
+	// success case
+	return nil, false
 }
 
 // GetRepos queries and fetches all the repositories that an organization
